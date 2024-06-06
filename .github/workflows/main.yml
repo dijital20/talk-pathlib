@@ -11,7 +11,7 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
 
       - name: Export Slides HTML
         run: npx @marp-team/marp-cli@latest SLIDES.md -o pathlib-SoHotRightNow.html --html true
