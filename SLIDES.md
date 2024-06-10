@@ -1,14 +1,19 @@
 ---
 marp: true
 paginate: true
+theme: uncover
 style: |
     table {
         margin-top: 1em;
         align: center;
     }
 
+    section h1 {
+        font-size: 2.5em;
+    }
+
     section.bigcode {
-        padding: 2em;
+        padding: 1em;
     }
 
     section.bigcode img {
@@ -22,13 +27,13 @@ style: |
 
     section.bigcode h2 {
         text-align: center;
-        font-size: 3em;
+        font-size: 2.5em;
     }
     
 ---
 
 <!-- 
-_class: invert 
+_class: invert
 _footer: ""
 _paginate: false
 -->
@@ -36,6 +41,8 @@ _paginate: false
 # Hot: `pathlib`, Not: String Paths
 
 Josh Schneider
+
+[@diji@mastodon.social](https://mastodon.social/@diji) - [dijital20@github.com](https://github.com/dijital20)
 
 <!-- 
 class: bigcode
@@ -48,6 +55,7 @@ class: bigcode
 <!-- 
 footer: In the beginning, there were string paths...
 _footer: ""
+_class: invert bigcode
  -->
 
 ---
@@ -88,6 +96,7 @@ os.path.isfile(path)
 <!-- 
 footer: Enter `pathlib`
 _footer: ""
+_class: invert bigcode
  -->
 
 ---
@@ -100,39 +109,7 @@ path = Path('~/foo/bar/baz.txt')
 
 ---
 
-## But just under the covers...
-
-<!-- 
-footer: But just under the covers...
-_footer: ""
- -->
-
----
-
-![bg fit right](./img/pathlib-inheritance.png)
-
-```py
-repr(path)
-
-# On Windows:
-# 
-#  WindowsPath('~/foo/bar/baz.txt')
-#
-# On Linux/MacOS:
-# 
-#  PosixPath('~/foo/bar/baz.txt')
-# 
-# Let's assume we're on a Mac...
-```
-
----
-
-## Some other initializers...
-
-<!-- 
-footer: Some other initializers...
-_footer: ""
- -->
+![bg fit](./img/pathlib-inheritance.png)
 
 ---
 
@@ -154,6 +131,7 @@ current_module = Path(__file__)
 <!-- 
 footer: Let's play with (pure) paths...
 _footer: ""
+_class: invert bigcode
  -->
 
 ---
@@ -240,6 +218,7 @@ data_dir = dir / 'data'
 <!-- 
 footer: Let's mess with directories...
 _footer: ""
+_class: invert bigcode
  -->
 
 ---
@@ -282,6 +261,7 @@ data_dir.rmdir()
 <!-- 
 footer: How about files now...
 _footer: ""
+_class: invert bigcode
  -->
 
 ---
@@ -365,11 +345,12 @@ list(dir.rglob('*'))
 
 ---
 
-## More information...
+## Documentation
 
-## [Pathlib - Object-oriented filesystem paths](https://docs.python.org/3/library/pathlib.html)
+[Pathlib - Object-oriented filesystem paths](https://docs.python.org/3/library/pathlib.html)
 
 <!-- 
 footer: More information...
 _footer: ""
+_class: invert bigcode
  -->
