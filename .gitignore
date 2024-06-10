@@ -2,3 +2,6 @@
 .venv
 venv
 
+# Output files
+SLIDES.html
+SLIDES.pdf
