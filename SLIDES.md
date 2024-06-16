@@ -76,6 +76,15 @@ os.path.split(path)
 # ('foo/bar', 'baz.txt')
 ```
 
+<!-- 
+    Speaker Notes:
+    Of course, `os.path` has functions to managing string paths, but annoyingly, you have to pass the paths all over the
+    place and keep up with the changes.
+
+    For instance, `abspath` here to get the absolute version of a path or `split` to split the last segment from the 
+    rest of the path.
+ -->
+
 ---
 
 ```py
@@ -88,6 +97,12 @@ os.path.isdir(path)
 os.path.isfile(path)  
 # True
 ```
+
+<!-- 
+    Speaker notes:
+    We also have a number of boolean functions, which can answer questions about a path, but again, you have to pass
+    the paths all over the place.
+ -->
 
 ---
 
@@ -107,9 +122,31 @@ from pathlib import Path
 path = Path('~/foo/bar/baz.txt')
 ```
 
+<!-- 
+    Speaker notes:
+    In `pathlib`, we have `Path` objects, which represent a path. These objects have methods and attributes relevant
+    to that path, making it so you don't have to pass the paths all over the place.
+ -->
+
 ---
 
 ![bg fit](./img/pathlib-inheritance.png)
+
+<!-- 
+    Speaker notes:
+    There's actually 2 classes at play here... `Path` and `PurePath`. `Path` is a subclass of `PurePath`, so it has all
+    of its powers and then some. In most cases, you will use `Path`, but in cases where you are only worried about
+    operations on the path itself (and not what it points to), you can use `PurePath.
+
+    When you create a `Path` or `PurePath` object, you actually get back an object relevant to the OS that you are
+    executing on:
+
+    Windows: `PureWindowsPath` and `WindowsPath`
+    Linux and Mac OS: `PurePosixPath` and `PosixPath`
+
+    This allows your code to remain platform agnostic. Each set of classes knows how to handle the paths on its 
+    platforms (such as path separators, how operations are performed, etc.).
+ -->
 
 ---
 
@@ -123,6 +160,12 @@ home = Path.home()
 # Current module
 current_module = Path(__file__)
 ```
+
+<!-- 
+    Speaker notes:
+    `Path` provides some other classmethods for initializing objects from certain locations. Also, you can use `Path`
+    with `__file__` to get a path to the current module.
+ -->
 
 ---
 
@@ -147,6 +190,15 @@ path.suffix
 # '.txt'
 ```
 
+<!-- 
+    Speaker notes:
+    `Path` objects have attributes for getting useful parts of a path.
+
+    `Path.name` can get the name of the last segment of the path.
+    `Path.stem` gives you the name of that last segment without the file extension.
+    `Path.suffix` gives you the file name's extension without the name.
+ -->
+
 ---
 
 ```py
@@ -161,6 +213,16 @@ list(path.parents)
 #   PosixPath('.')
 # ]
 ```
+
+<!-- 
+    Speaker notes:
+    `Path.parent` can give you a path object for the path containing the last segment. Since it returns a path object,
+    this can be chained. `path.parent` gives you the containing folder, `path.parent.parent` giving you the grandfather
+    folder, and `path.parent.name` to give you the name of the containing folder.
+
+    `Path.parents` can give you a list of all of the ancestor paths, so that you don't need to add repeated `.parent`
+    calls.
+ -->
 
 ---
 
@@ -177,6 +239,20 @@ path.resolve()
 # PosixPath('/Users/diji/foo/bar/baz.txt')
 # Follows symlinks to the source
 ```
+
+<!-- 
+    Speaker notes:
+    `Path` also provides some methods for giving you transformed paths. For instance, `expanduser()` will expand the 
+    `~` to the user's home folder (this works on Windows too for giving you %USERPROFILE%).
+
+    `Path.absolute()` will give you an absolute path if the path is a relative paths, but does not resolve symlinks.
+
+    `Path.resolve()` does that `absolute()` does, but also resolves symbolic links, returning you a "canonical" path
+    to the item in question. Adding `strict=True` to a `resolve()` call will cause it to raise an exception if the path
+    does not exist.
+
+    For good security, you should ALWAYS call `resolve()` on path objects before using them.
+ -->
 
 ---
 
@@ -197,19 +273,33 @@ path.is_symlink()
 # False
 ```
 
+<!-- 
+    Speaker notes:
+    `Path` objects also have boolean methods for telling you things about the path in question. This can help determine
+    information about the path so that you can use it appropriately.
+ -->
+
 ---
 
 ![bg fit right](./img/theyre-the-same-picture.jpg)
 
 ```py
-dir = path.parent
+parent_dir = path.parent
 
-data_dir = dir.joinpath('data')
+data_dir = parent_dir.joinpath('data')
 # PosixPath('~/foo/bar/data')
 
-data_dir = dir / 'data'
+data_dir = parent_dir / 'data'
 # PosixPath('~/foo/bar/data')
 ```
+
+<!-- 
+    Speaker notes:
+    `Path` objects also give you novel ways to create new paths from path objects. Like we mentioned, you can use 
+    `.parent` to get the parent path. You can use `joinpath` to extend the path by a path segment as a string, or better
+    use the `/` operator to combine paths. While it seems a little unorthodox to use the / operator, it makes sense
+    when you see paths written in this manner.
+ -->
 
 ---
 
@@ -229,23 +319,42 @@ data_dir.mkdir(parents=True, exist_ok=True)
 #  with no error if it already exists
 ```
 
+<!-- 
+    Speaker notes:
+    The `mkdir()` method can create a directory for the current path. What's very cool are the options:
+    - `parents=True` will tell it to create any ancestor paths that do not exist in between.
+    - `exist_ok=True` will tell it to not throw an error if the path already exists as a directory.
+    These two options handle 90% of the errors you would get from this operation, and make it very easy to use.
+ -->
+
 ---
 
 ```py
-list(dir.walk())
+list(parent_dir.walk())
 # [PosixPath('~/foo/bar/data')]
 # Walk the structure, returning each Path object
 #  New in Python 3.12!
 
-list(dir.glob('*'))
+list(parent_dir.glob('*'))
 # [PosixPath('~/foo/bar/data')]
 # Get all of the Path objects in the current folder
 
-list(dir.rglob('*'))
+list(parent_dir.rglob('*'))
 # [PosixPath('~/foo/bar/data')]
 # Get all of the Path objects in the current folder
 #  and subfolders
 ```
+
+<!-- 
+    Speaker notes:
+    The `walk()` method is new in Python 3.12, and gives us an alternative to `os.walk`. This walks the path structure
+    returning each item encountered (whether file, folder, symlink, junction, etc.) along the way. Passing 
+    `topdown=False` will cause it to process bottom-up, returning the deepest objects first and the most shallow last.
+    More on that shortly.
+
+    `glob()` and `rglob()` return path objects that match the glob pattern. `glob()` returns only things in the current
+    path, while `rglob()` combs recursively through subdirectories. Each item is returned as a `Path` object.
+ -->
 
 ---
 
@@ -253,6 +362,12 @@ list(dir.rglob('*'))
 data_dir.rmdir()
 # Delete it (but only if it is empty)!
 ```
+
+<!-- 
+    Speaker notes:
+    Finally, we have `rmdir()`, which deletes the directory. This will raise an exception if the directory is not empty,
+    so make sure you clean things out of the directory first.
+ -->
 
 ---
 
@@ -297,7 +412,7 @@ path.write_text(
 
 path.write_bytes(b'This is file content')
 
-with path.open(mode='r', encoding='UTF-8') as f:
+with path.open(mode='w', encoding='UTF-8') as f:
     f.write('This is file content')
 ```
 
@@ -332,7 +447,7 @@ new_path.unlink()
 ---
 
 ```py
-for p in dir.walk(topdown=False):
+for p in parent_dir.walk(topdown=False):
     if p.is_file():
         p.unlink()  # Delete file
     
