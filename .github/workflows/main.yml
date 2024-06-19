@@ -31,10 +31,15 @@ jobs:
           path: pathlib-SoHotRightNow.*
           retention-days: 7
 
+      - name: Tag branch (main only)
+        if: endswith(github.ref, 'main')
+        uses: mydea/action-tag-date-version@20.6.3
+        id: version-tag
+  
       - name: Cut a release (main only)
         uses: ncipollo/release-action@v1
         if: endsWith(github.ref, 'main')
         with:
           artifacts: pathlib-SoHotRightNow.*
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: Revision ${{ github.event.repository.updated_at }}
+          tag: ${{ steps.version-tag.outputs.version }}
