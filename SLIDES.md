@@ -202,6 +202,25 @@ path.suffix
 ---
 
 ```py
+path.with_name('spam.txt')
+# PosixPath('~/foo/bar/spam.txt')
+
+path.with_stem('eggs')
+# PosixPath('~/foo/bar/eggs.txt')
+
+path.with_suffix('.zip')
+# PosixPath('~/foo/bar/baz.zip')
+```
+
+<!-- 
+    Speaker notes:
+    Just like we have attributes for `name`, `stem`, and `suffix`, we have "with methods" to change just those parts
+    of the path.
+ -->
+
+---
+
+```py
 path.parent
 # PosixPath('~/foo/bar')
 
@@ -238,6 +257,8 @@ path.absolute()
 path.resolve()
 # PosixPath('/Users/diji/foo/bar/baz.txt')
 # Follows symlinks to the source
+
+path = path.resolve()
 ```
 
 <!-- 
@@ -258,19 +279,15 @@ path.resolve()
 
 ```py
 path.exists()
-# True
-
 path.is_dir()
-# False
-
 path.is_file()
-# True
-
 path.is_junction()
-# False
-
 path.is_symlink()
-# False
+path.is_mount()
+path.is_socket()
+path.is_fifo()
+path.is_block_device()
+path.is_char_device()
 ```
 
 <!-- 
@@ -303,6 +320,31 @@ data_dir = parent_dir / 'data'
 
 ---
 
+```py
+path.is_relative_to(home)
+# True
+
+home in path.absolute().parents
+# True
+
+path.relative_to(home)
+# PosixPath('foo/bar')
+```
+
+<!-- 
+    Speaker notes:
+    The `is_relative_to()` method tests if the path is relative to another path... whether they share ancestry.
+    This method was added in Python 3.9, but looks like it is being deprecated in 3.12 for removal in 3.14. 
+    
+    You can use the parents to get the set of parent path structures, and test for membership. Since `parents` works off
+    of the `Path` without talking to the filesystem, you may want to either `absolute()` or `resolve()` the path first.
+
+    You can use `relative_to()` to get a relative path. This will raise an exception if the paths are not relative to 
+    each other.
+ -->
+
+---
+
 ## Let's mess with directories...
 
 <!-- 
@@ -314,9 +356,15 @@ _class: invert bigcode
 ---
 
 ```py
+data_dir.is_dir()
+# False
+
 data_dir.mkdir(parents=True, exist_ok=True)
 # Path, including parents, created... 
 #  with no error if it already exists
+
+data_dir.is_dir()
+# True
 ```
 
 <!-- 
@@ -330,6 +378,10 @@ data_dir.mkdir(parents=True, exist_ok=True)
 ---
 
 ```py
+list(parent_dir.iterdir())
+# [PosixPath('~/foo/bar/data')]
+# Get all of the Path objects in the current folder.
+
 list(parent_dir.walk())
 # [PosixPath('~/foo/bar/data')]
 # Walk the structure, returning each Path object
@@ -389,6 +441,12 @@ list(dir.rglob('*'))
 # [PosixPath('~/foo/bar/baz.txt')]
 ```
 
+<!-- 
+    Speaker notes:
+    If you've worked on POSIX operating systems, then you know the `touch` command. The `touch()` method does the same
+    thing... creates an empty file.
+ -->
+
 ---
 
 ```py
@@ -403,6 +461,17 @@ with path.open(mode='r', encoding='UTF-8') as f:
     f.read()
 # ''
 ```
+
+<!-- 
+    Speaker notes:
+    `Path` provides some simple methods for reading file contents. You can use the `read_text()` method to read the
+    file's contents to a string, or `read_bytes()` to read the file's contents as a bytes object. These are convenient
+    if you want to get all of the file's contents at once.
+
+    `Path` also provides `open()`, which works just like the built-in `open()` function, except since you are calling
+    it off the path, you don't need to pass the path in. This makes it easy and convenient to open files.
+ -->
+
 ---
 
 ```py
@@ -416,6 +485,12 @@ with path.open(mode='w', encoding='UTF-8') as f:
     f.write('This is file content')
 ```
 
+<!-- 
+    Speaker notes:
+    Just like we did for reading, we have convienent methods to write. `write_text()` writes a string to file, while
+    `write_bytes` writes bytes to the file, and `open()` is still there to open the file yourself.
+ -->
+
 ---
 
 ```py
@@ -428,6 +503,12 @@ s.st_mode
 # 33188
 ```
 
+<!-- 
+    Speaker notes:
+    The `stat()` method gets statistics about the file, such as the timestamps (created, modified, etc.), size, mode, 
+    etc. This is convenient for getting the size of a file very quickly.
+ -->
+
 ---
 
 ```py
@@ -436,27 +517,49 @@ new_path.parent.mkdir(parents=True, exist_ok=True)
 
 path.rename(new_path)
 # PosixPath('~/foo2/bar/baz.txt')
+# This will error if the destination already exists.
 
 new_path.replace(path)
 # PosixPath('~/foo/bar/baz.txt')
+# This will not error, it will just overwrite.
 
-new_path.unlink()
+new_path.unlink(missing_ok=True)
 # Delete file
 ```
+
+<!-- 
+    Speaker notes:
+    We can also easily rename or replace files. `rename()` renames the item referenced by the calling `Path` object
+    with the one passed to the function.
+ -->
 
 ---
 
 ```py
-for p in parent_dir.walk(topdown=False):
+for p in [*parent_dir.walk(topdown=False), parent_dir]:
     if p.is_file():
         p.unlink()  # Delete file
     
     elif p.is_dir():
         p.rmdir()  # Delete empty dir
 
-list(dir.rglob('*'))
+list(parent_dir.rglob('*'))
 # []
+
+parent_dir.exists()
+# False
 ```
+
+<!-- 
+    Speaker notes:
+    Combining all of this, let's use everything we've learned to clean up. We use `walk()` to walk the structure in a
+    depth-first manner (we do this so we get to files before their parent folders). If the `Path` points to a file, 
+    call `unlink()` to delete it. If the `Path` is a directory, then call `rmdir()` to remove it (if we've successfully
+    deleted child folders, then this should succeed). We also tossed in the parent directory so that the containing
+    folder would be cleaned up too.
+    
+    At the end, the folder should be empty.
+ -->
 
 ---
 
