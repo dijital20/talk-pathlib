@@ -126,6 +126,9 @@ path = Path('~/foo/bar/baz.txt')
     Speaker notes:
     In `pathlib`, we have `Path` objects, which represent a path. These objects have methods and attributes relevant
     to that path, making it so you don't have to pass the paths all over the place.
+
+    Just like string paths, `Path` objects are immutable and hashable, so they can be placed in sets and used as keys
+    in dictionaries.
  -->
 
 ---
@@ -221,6 +224,9 @@ path.with_suffix('.zip')
 ---
 
 ```py
+path.parts
+# ['~', 'foo', 'bar', 'baz.txt']
+
 path.parent
 # PosixPath('~/foo/bar')
 
@@ -235,6 +241,9 @@ list(path.parents)
 
 <!-- 
     Speaker notes:
+    `Path.parts` will give you the segments in your path as a list of strings. This can be useful for determining if
+    a path has a specified subfolder name, or being able to pop out segments of paths.
+
     `Path.parent` can give you a path object for the path containing the last segment. Since it returns a path object,
     this can be chained. `path.parent` gives you the containing folder, `path.parent.parent` giving you the grandfather
     folder, and `path.parent.name` to give you the name of the containing folder.
