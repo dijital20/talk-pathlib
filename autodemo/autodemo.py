@@ -1,8 +1,11 @@
+"""Automating demo."""
 import argparse
+from collections.abc import Iterator
 import os
 import shutil
 import traceback as tb
 from pathlib import Path
+from typing import TextIO
 
 
 def _canonical_path(val: str) -> Path:
@@ -15,31 +18,31 @@ def _get_width() -> int:
     return shutil.get_terminal_size()[0]
 
 
-def process_file(__path: Path):
+def process_file(path: Path):
     """Process a script file, line by line.
 
     Args:
         script_path: Path of a text file containing lines to execute.
     """
-    with __path.open(mode="r", encoding="UTF-8") as __f:
-        __locals = {}
-        for __idx, __expression in enumerate(__f, start=1):
-            print(f"[{__idx:>3}] >>> {__expression.rstrip()}")
+    with path.open(mode="r", encoding="UTF-8") as f:
+        local_scope = {}
+        for idx, expression in enumerate(f, start=1):
+            print(f"[{idx:>3}] >>> {expression.rstrip()}")
 
             try:
-                __result = eval(__expression, globals(), __locals)
+                result = eval(expression, globals(), local_scope)
             except SyntaxError:
-                exec(__expression, globals(), __locals)
+                exec(expression, globals(), local_scope)
             except Exception as e:
                 tb.print_exception(e)
             else:
-                if __result is not None:
-                    print(f"{__result!r}")
+                if result is not None:
+                    print(f"{result!r}")
 
-            if __locals:
+            if local_scope:
                 print(
                     "\nLocals:\n"
-                    f"{"\n".join(f"  {k} = {v!r}" for k, v in __locals.items())}",
+                    f"{"\n".join(f"  {k} = {v!r}" for k, v in local_scope.items())}",
                 )
 
             if (

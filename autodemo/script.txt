@@ -55,12 +55,10 @@ path.read_text(encoding='UTF-8')
 path.read_bytes()
 with path.open(mode='r', encoding='UTF-8') as f:
     f.read()
-
 path.write_text('this is file content', encoding='UTF-8')
 path.write_bytes(b'This is file content')
 with path.open(mode='w', encoding='UTF-8') as f:
     f.write('This is file content')
-
 s = path.stat()
 s.st_size
 s.st_mode
