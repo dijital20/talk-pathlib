@@ -33,7 +33,7 @@ def process_file(__path: Path):
             except Exception as e:
                 tb.print_exception(e)
             else:
-                if __result:
+                if __result is not None:
                     print(f"{__result!r}")
 
             if __locals:
