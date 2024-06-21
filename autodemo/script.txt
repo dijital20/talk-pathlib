@@ -50,7 +50,7 @@ list(parent_dir.glob('*'))
 list(parent_dir.rglob('*'))
 data_dir.rmdir()
 path.touch()
-list(dir.rglob('*'))
+list(parent_dir.rglob('*'))
 path.read_text(encoding='UTF-8')
 path.read_bytes()
 with path.open(mode='r', encoding='UTF-8') as f:
@@ -67,4 +67,10 @@ new_path.parent.mkdir(parents=True, exist_ok=True)
 path.rename(new_path)
 new_path.replace(path)
 new_path.unlink(missing_ok=True)
+for p in [*sorted(parent_dir.rglob('*'), reverse=True), parent_dir]:
+    if p.is_file():
+        p.unlink()  # Delete file
+    elif p.is_dir():
+        p.rmdir()  # Delete empty dir
+list(parent_dir.rglob('*'))
 parent_dir.exists()
