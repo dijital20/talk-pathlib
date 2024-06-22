@@ -4,7 +4,8 @@ import argparse
 import os
 import shutil
 import traceback as tb
-from collections.abc import Iterator
+from collections import UserDict
+from collections.abc import Iterable, Iterator
 from enum import StrEnum
 from pathlib import Path
 from typing import Any, TextIO
@@ -75,6 +76,21 @@ class Ansi(StrEnum):
 PROMPT = f"{Ansi.green}(q for quit, any other key to continue):{Ansi.reset} "
 
 
+class LocalScope(UserDict):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.updated_keys = set()
+
+    def __setitem__(self, key: Any, item: Any) -> None:
+        """Log when we update an item."""
+        self.updated_keys.add(key)
+        return super().__setitem__(key, item)
+
+    def reset_updated_keys(self):
+        """Reset the list of updated keys."""
+        self.updated_keys.clear()
+
+
 def _canonical_path(val: str) -> Path:
     """Convert string path into a canonical path object."""
     return Path(val).resolve()
@@ -118,14 +134,15 @@ def _print_expression(expression: str):
         print(f"{prompt} {line}")
 
 
-def _print_local_scope(local_scope: dict[str, Any]):
+def _print_local_scope(local_scope: LocalScope[str, Any]):
     """Write the local scope to the console.
 
     Args:
         local_scope: Local scope dictionary.
+        changed: Items that have changed since the last state.
     """
-    width = shutil.get_terminal_size()[0]
     if local_scope:
+        width = shutil.get_terminal_size()[0]
         print(
             f"{Ansi.blue}{Ansi.dim}{Ansi.underline}{' ' * width}{Ansi.reset}\n"
             f"{Ansi.bright_blue}Locals{Ansi.reset}"
@@ -138,7 +155,10 @@ def _print_local_scope(local_scope: dict[str, Any]):
                 if len(value_repr) < value_width
                 else f"{value_repr[:value_width - 12]}...{value_repr[-8:]}"
             )
-            print(f"{Ansi.red}{name}{Ansi.reset} = {value}")
+            new_mark = f"{Ansi.bold}*" if name in local_scope.updated_keys else " "
+            print(f"{new_mark}{Ansi.red}{name}{Ansi.reset} = {value}")
+
+        local_scope.reset_updated_keys()
 
 
 def process_file(path: Path):
@@ -148,7 +168,7 @@ def process_file(path: Path):
         script_path: Path of a text file containing lines to execute.
     """
     with path.open(mode="r", encoding="UTF-8") as f:
-        local_scope = {}
+        local_scope = LocalScope()
         for expression in _find_executable_lines(f):
             _print_expression(expression)
 
