@@ -2,10 +2,11 @@
 
 import argparse
 import os
+from pprint import pformat
 import shutil
 import traceback as tb
 from collections import UserDict
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterator
 from enum import StrEnum
 from pathlib import Path
 from typing import Any, TextIO
@@ -167,6 +168,7 @@ def process_file(path: Path):
     Args:
         script_path: Path of a text file containing lines to execute.
     """
+    width = shutil.get_terminal_size()[0]
     with path.open(mode="r", encoding="UTF-8") as f:
         local_scope = LocalScope()
         for expression in _find_executable_lines(f):
@@ -177,10 +179,10 @@ def process_file(path: Path):
             except SyntaxError:  # expression was not an expression
                 result = exec(expression, globals(), local_scope)
             except Exception as e:
-                tb.print_exception(e)
+                print(f"{Ansi.red}{type(e).__name__}: {e}{Ansi.reset}")
             else:
                 if result is not None:
-                    print(f"{Ansi.blue}{result!r}{Ansi.reset}")
+                    print(f"{Ansi.blue}{pformat(result, width=width)}{Ansi.reset}")
 
             _print_local_scope(local_scope)
 
