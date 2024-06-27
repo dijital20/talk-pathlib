@@ -83,9 +83,13 @@ list(parent_dir.walk())
 list(parent_dir.glob("*"))
 list(parent_dir.rglob("*"))
 data_dir.rmdir()
+data_dir.is_dir()
+parent_dir.rmdir()
 
 # Let's mess with files...
 path.exists()
+path.touch()
+parent_dir.mkdir(exist_ok=True, parents=True)
 path.touch()
 path.exists()
 path.is_file()
