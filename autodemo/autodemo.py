@@ -4,7 +4,6 @@ import argparse
 import os
 from pprint import pformat
 import shutil
-import traceback as tb
 from collections import UserDict
 from collections.abc import Iterator
 from enum import StrEnum
@@ -78,7 +77,14 @@ PROMPT = f"{Ansi.green}(q for quit, any other key to continue):{Ansi.reset} "
 
 
 class LocalScope(UserDict):
+    """Variant of a dictionary that tracks which keys have been set/modified.
+
+    Attributes:
+        updated_keys: Set of keys that have been updated.
+    """
+
     def __init__(self, *args, **kwargs):
+        """Prepare a LocalScope for use."""
         super().__init__(*args, **kwargs)
         self.updated_keys = set()
 
@@ -88,12 +94,19 @@ class LocalScope(UserDict):
         return super().__setitem__(key, item)
 
     def reset_updated_keys(self):
-        """Reset the list of updated keys."""
+        """Reset the set of updated keys."""
         self.updated_keys.clear()
 
 
 def _canonical_path(val: str) -> Path:
-    """Convert string path into a canonical path object."""
+    """Convert string path into a canonical path object.
+
+    Args:
+        val: Input value as a string.
+
+    Returns:
+        A canonical Path object.
+    """
     return Path(val).resolve()
 
 
@@ -104,7 +117,7 @@ def _find_executable_lines(f: TextIO) -> Iterator[str]:
         f: File object.
 
     Yields:
-        Iterator[str]: Each executable line.
+        Each executable line.
     """
     buffer = f.read(1)
     while True:
