@@ -1,13 +1,16 @@
 """Automating demo."""
 
 import argparse
+import ast
 import os
-from pprint import pformat
 import shutil
+import sys
+import textwrap
 from collections import UserDict
 from collections.abc import Iterator
 from enum import StrEnum
 from pathlib import Path
+from pprint import pformat
 from typing import Any, TextIO
 
 
@@ -73,7 +76,7 @@ class Ansi(StrEnum):
     clear_line = "\u001b[2K"
 
 
-PROMPT = f"{Ansi.green}(q for quit, any other key to continue):{Ansi.reset} "
+PROMPT = f"{Ansi.green}(q for quit, any other value to continue):{Ansi.reset} "
 
 
 class LocalScope(UserDict):
@@ -148,6 +151,35 @@ def _print_expression(expression: str):
         print(f"{prompt} {line}")
 
 
+def _execute_line(code: str, local_scope: dict[str, Any]) -> Any:
+    """Execute code.
+
+    Args:
+        code: Code to execute.
+        local_scope: Dictionary to use for local scope.
+
+    Returns:
+        Return value of the operation.
+    """
+    # Try to compile this as an eval expression
+    try:
+        code = compile(code, "<string>", "eval")
+
+    # Whoops, wasn't an expression, just exec it.
+    except SyntaxError:
+        try:
+            exec(code, globals(), local_scope)
+        except Exception as e:
+            print(f"{Ansi.red}{type(e).__name__}: {e}{Ansi.reset}")
+
+    # Ah HA!, we have an expression!
+    else:
+        try:
+            return eval(code, globals(), local_scope)
+        except Exception as e:
+            print(f"{Ansi.red}{type(e).__name__}: {e}{Ansi.reset}")
+
+
 def _print_local_scope(local_scope: LocalScope[str, Any]):
     """Write the local scope to the console.
 
@@ -164,11 +196,7 @@ def _print_local_scope(local_scope: LocalScope[str, Any]):
         for name, value in local_scope.items():
             value_width = width - len(name) - 3
             value_repr = repr(value)
-            value = (
-                value_repr
-                if len(value_repr) < value_width
-                else f"{value_repr[:value_width - 12]}...{value_repr[-8:]}"
-            )
+            value = textwrap.shorten(value_repr, value_width, placeholder="...")
             new_mark = f"{Ansi.bold}*" if name in local_scope.updated_keys else " "
             print(f"{new_mark}{Ansi.red}{name}{Ansi.reset} = {value}")
 
@@ -184,18 +212,12 @@ def process_file(path: Path):
     width = shutil.get_terminal_size()[0]
     with path.open(mode="r", encoding="UTF-8") as f:
         local_scope = LocalScope()
-        for expression in _find_executable_lines(f):
-            _print_expression(expression)
+        print(f"{Ansi.blue}{Ansi.dim}{Ansi.underline}{' ' * width}{Ansi.reset}")
+        for code in _find_executable_lines(f):
+            _print_expression(code)
 
-            try:
-                result = eval(expression, globals(), local_scope)
-            except SyntaxError:  # expression was not an expression
-                result = exec(expression, globals(), local_scope)
-            except Exception as e:
-                print(f"{Ansi.red}{type(e).__name__}: {e}{Ansi.reset}")
-            else:
-                if result is not None:
-                    print(f"{Ansi.blue}{pformat(result, width=width)}{Ansi.reset}")
+            if result := _execute_line(code, local_scope) is not None:
+                print(f"{Ansi.blue}{pformat(result, width=width)}{Ansi.reset}")
 
             _print_local_scope(local_scope)
 
