@@ -70,10 +70,10 @@ path = '~/foo/bar/baz.txt'
 import os.path
 
 os.path.abspath(path)  
-# '/Users/diji/foo/bar/baz.txt'
+# '/Users/diji/~/foo/bar/baz.txt'  # What?
 
 os.path.split(path)  
-# ('foo/bar', 'baz.txt')
+# ('~/foo/bar', 'baz.txt')
 ```
 
 <!-- 
