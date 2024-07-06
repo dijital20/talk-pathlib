@@ -1,10 +1,9 @@
 """Automating demo."""
 
 import argparse
-import ast
 import os
+import platform
 import shutil
-import sys
 import textwrap
 from collections import UserDict
 from collections.abc import Iterator
@@ -101,6 +100,11 @@ class LocalScope(UserDict):
         self.updated_keys.clear()
 
 
+def _get_width() -> int:
+    """Get the terminal width."""
+    return shutil.get_terminal_size()[0]
+
+
 def _canonical_path(val: str) -> Path:
     """Convert string path into a canonical path object.
 
@@ -188,13 +192,12 @@ def _print_local_scope(local_scope: LocalScope[str, Any]):
         changed: Items that have changed since the last state.
     """
     if local_scope:
-        width = shutil.get_terminal_size()[0]
         print(
-            f"{Ansi.blue}{Ansi.dim}{Ansi.underline}{' ' * width}{Ansi.reset}\n"
+            f"{Ansi.white}{Ansi.dim}{Ansi.underline}{' ' * _get_width()}{Ansi.reset}\n"
             f"{Ansi.bright_blue}Locals{Ansi.reset}"
         )
         for name, value in local_scope.items():
-            value_width = width - len(name) - 3
+            value_width = _get_width() - len(name) - 3
             value_repr = repr(value)
             value = textwrap.shorten(value_repr, value_width, placeholder="...")
             new_mark = f"{Ansi.bold}*" if name in local_scope.updated_keys else " "
@@ -209,15 +212,22 @@ def process_file(path: Path):
     Args:
         script_path: Path of a text file containing lines to execute.
     """
-    width = shutil.get_terminal_size()[0]
     with path.open(mode="r", encoding="UTF-8") as f:
         local_scope = LocalScope()
-        print(f"{Ansi.blue}{Ansi.dim}{Ansi.underline}{' ' * width}{Ansi.reset}")
+        print(
+            f"{Ansi.white}{Ansi.italic}Python {platform.python_version()} "
+            f"on {platform.platform()}\n"
+            f"{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
+        )
         for code in _find_executable_lines(f):
+            if code == "#":
+                print("")
+                continue
+
             _print_expression(code)
 
-            if result := _execute_line(code, local_scope) is not None:
-                print(f"{Ansi.blue}{pformat(result, width=width)}{Ansi.reset}")
+            if (result := _execute_line(code, local_scope)) is not None:
+                print(f"{Ansi.blue}{pformat(result, width=_get_width())}{Ansi.reset}")
 
             _print_local_scope(local_scope)
 
@@ -253,7 +263,9 @@ if __name__ == "__main__":
 
     if args.work_dir:
         args.work_dir = args.work_dir.resolve()
-        print(f"Changing directory to {args.work_dir}")
+        print(
+            f"{Ansi.white}{Ansi.italic}Changing directory to {args.work_dir}{Ansi.reset}"
+        )
         os.chdir(args.work_dir)
 
     process_file(args.file_path)
