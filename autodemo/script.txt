@@ -74,7 +74,6 @@ home_dir.is_block_device()
 home_dir.is_char_device()
 
 # More path operations...
-path.parent
 parent_dir = path.parent
 data_dir = parent_dir.joinpath("data")
 data_dir = parent_dir / "data"
@@ -85,6 +84,7 @@ path.relative_to(home_dir)
 #
 # Let's mess with directories...
 data_dir.is_dir()
+data_dir.mkdir()
 data_dir.mkdir(parents=True, exist_ok=True)
 data_dir.is_dir()
 list(parent_dir.iterdir())
@@ -131,8 +131,10 @@ new_path.unlink(missing_ok=True)
 # Now let's cleanup...
 for p in [*sorted(parent_dir.rglob("*"), reverse=True), parent_dir]:
     if p.is_file():
+        print(f"Deleting file {p}")
         p.unlink()  # Delete file
     elif p.is_dir():
+        print(f"Deleting dir {p}")
         p.rmdir()  # Delete empty dir
 list(parent_dir.rglob("*"))
 parent_dir.exists()
