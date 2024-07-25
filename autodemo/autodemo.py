@@ -2,17 +2,21 @@
 
 import argparse
 import os
-from pprint import pformat
+import platform
 import shutil
-import traceback as tb
+import textwrap
 from collections import UserDict
 from collections.abc import Iterator
 from enum import StrEnum
 from pathlib import Path
+from pprint import pformat
 from typing import Any, TextIO
 
 
+# region Enumerations, Constants and Utility classes
 class Ansi(StrEnum):
+    """Ansi escape sequences for controlling terminal output."""
+
     # Text colors
     black = "\u001b[30m"
     red = "\u001b[31m"
@@ -74,11 +78,18 @@ class Ansi(StrEnum):
     clear_line = "\u001b[2K"
 
 
-PROMPT = f"{Ansi.green}(q for quit, any other key to continue):{Ansi.reset} "
+PROMPT = f"{Ansi.green}(q for quit, any other value to continue):{Ansi.reset} "
 
 
 class LocalScope(UserDict):
+    """Variant of a dictionary that tracks which keys have been set/modified.
+
+    Attributes:
+        updated_keys: Set of keys that have been updated.
+    """
+
     def __init__(self, *args, **kwargs):
+        """Prepare a LocalScope for use."""
         super().__init__(*args, **kwargs)
         self.updated_keys = set()
 
@@ -88,12 +99,28 @@ class LocalScope(UserDict):
         return super().__setitem__(key, item)
 
     def reset_updated_keys(self):
-        """Reset the list of updated keys."""
+        """Reset the set of updated keys."""
         self.updated_keys.clear()
 
 
+# endregion
+
+
+# region Private functions
+def _get_width() -> int:
+    """Get the terminal width."""
+    return shutil.get_terminal_size()[0]
+
+
 def _canonical_path(val: str) -> Path:
-    """Convert string path into a canonical path object."""
+    """Convert string path into a canonical path object.
+
+    Args:
+        val: Input value as a string.
+
+    Returns:
+        A canonical Path object.
+    """
     return Path(val).resolve()
 
 
@@ -104,7 +131,7 @@ def _find_executable_lines(f: TextIO) -> Iterator[str]:
         f: File object.
 
     Yields:
-        Iterator[str]: Each executable line.
+        Each executable line.
     """
     buffer = f.read(1)
     while True:
@@ -135,6 +162,35 @@ def _print_expression(expression: str):
         print(f"{prompt} {line}")
 
 
+def _execute_line(code: str, local_scope: dict[str, Any]) -> Any:
+    """Execute code.
+
+    Args:
+        code: Code to execute.
+        local_scope: Dictionary to use for local scope.
+
+    Returns:
+        Return value of the operation.
+    """
+    # Try to compile this as an eval expression
+    try:
+        code = compile(code, "<string>", "eval")
+
+    # Whoops, wasn't an expression, just exec it.
+    except SyntaxError:
+        try:
+            exec(code, globals(), local_scope)
+        except Exception as e:
+            print(f"{Ansi.red}{type(e).__name__}: {e}{Ansi.reset}")
+
+    # Ah HA!, we have an expression!
+    else:
+        try:
+            return eval(code, globals(), local_scope)
+        except Exception as e:
+            print(f"{Ansi.red}{type(e).__name__}: {e}{Ansi.reset}")
+
+
 def _print_local_scope(local_scope: LocalScope[str, Any]):
     """Write the local scope to the console.
 
@@ -143,46 +199,46 @@ def _print_local_scope(local_scope: LocalScope[str, Any]):
         changed: Items that have changed since the last state.
     """
     if local_scope:
-        width = shutil.get_terminal_size()[0]
         print(
-            f"{Ansi.blue}{Ansi.dim}{Ansi.underline}{' ' * width}{Ansi.reset}\n"
+            f"{Ansi.white}{Ansi.dim}{Ansi.underline}{' ' * _get_width()}{Ansi.reset}\n"
             f"{Ansi.bright_blue}Locals{Ansi.reset}"
         )
         for name, value in local_scope.items():
-            value_width = width - len(name) - 3
+            value_width = _get_width() - len(name) - 3
             value_repr = repr(value)
-            value = (
-                value_repr
-                if len(value_repr) < value_width
-                else f"{value_repr[:value_width - 12]}...{value_repr[-8:]}"
-            )
+            value = textwrap.shorten(value_repr, value_width, placeholder="...")
             new_mark = f"{Ansi.bold}*" if name in local_scope.updated_keys else " "
             print(f"{new_mark}{Ansi.red}{name}{Ansi.reset} = {value}")
 
         local_scope.reset_updated_keys()
 
 
+# endregion
+
+
+# region Public functions
 def process_file(path: Path):
     """Process a script file, line by line.
 
     Args:
         script_path: Path of a text file containing lines to execute.
     """
-    width = shutil.get_terminal_size()[0]
     with path.open(mode="r", encoding="UTF-8") as f:
         local_scope = LocalScope()
-        for expression in _find_executable_lines(f):
-            _print_expression(expression)
+        print(
+            f"{Ansi.white}{Ansi.italic}Python {platform.python_version()} "
+            f"on {platform.platform()}\n"
+            f"{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
+        )
+        for code in _find_executable_lines(f):
+            if code == "#":
+                print("")
+                continue
 
-            try:
-                result = eval(expression, globals(), local_scope)
-            except SyntaxError:  # expression was not an expression
-                result = exec(expression, globals(), local_scope)
-            except Exception as e:
-                print(f"{Ansi.red}{type(e).__name__}: {e}{Ansi.reset}")
-            else:
-                if result is not None:
-                    print(f"{Ansi.blue}{pformat(result, width=width)}{Ansi.reset}")
+            _print_expression(code)
+
+            if (result := _execute_line(code, local_scope)) is not None:
+                print(f"{Ansi.blue}{pformat(result, width=_get_width())}{Ansi.reset}")
 
             _print_local_scope(local_scope)
 
@@ -201,6 +257,9 @@ def process_file(path: Path):
             _print_local_scope(local_scope)
 
 
+# endregion
+
+# region Main block
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Execute steps in a file.")
     parser.add_argument(
@@ -218,7 +277,10 @@ if __name__ == "__main__":
 
     if args.work_dir:
         args.work_dir = args.work_dir.resolve()
-        print(f"Changing directory to {args.work_dir}")
+        print(
+            f"{Ansi.white}{Ansi.italic}Changing directory to {args.work_dir}{Ansi.reset}"
+        )
         os.chdir(args.work_dir)
 
     process_file(args.file_path)
+# endregion

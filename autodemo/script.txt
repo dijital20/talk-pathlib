@@ -6,32 +6,40 @@ path
 
 import os.path  # We need this guy to even work with them
 
-path = os.path.expanduser(path)
-os.path.normpath(path)
 os.path.abspath(path)
+# What?
+
+path = os.path.expanduser(path)
 os.path.split(path)
 os.path.exists(path)
 os.path.isdir(path)
 os.path.isfile(path)
-# What's with all of this passing things all over the place?
+# Look how we have to pass things all over the place?
 # What is this, the dark ages?
 
+#
 # Enter pathlib!!
 from pathlib import Path
 
 path = Path("~/foo/bar/baz.txt")
-str(path)
-type(path)
+
+path
 type(path).__mro__  # What are its ancestors?
-hash(path)  # Will it hash? Yes!
+
+str(path)
+Path(path)
+
+hash(path)
 
 # Other ways to make a path
 current_dir = Path.cwd()
 home_dir = Path.home()
 Path(__file__)
 
+#
 # Let's mess with PurePath operations...
 # Paths have parts and parents
+path
 path.parts
 path.parent
 list(path.parents)
@@ -66,7 +74,6 @@ home_dir.is_block_device()
 home_dir.is_char_device()
 
 # More path operations...
-path.parent
 parent_dir = path.parent
 data_dir = parent_dir.joinpath("data")
 data_dir = parent_dir / "data"
@@ -74,8 +81,10 @@ path.is_relative_to(home_dir)
 home_dir in path.absolute().parents
 path.relative_to(home_dir)
 
+#
 # Let's mess with directories...
 data_dir.is_dir()
+data_dir.mkdir()
 data_dir.mkdir(parents=True, exist_ok=True)
 data_dir.is_dir()
 list(parent_dir.iterdir())
@@ -86,6 +95,7 @@ data_dir.rmdir()
 data_dir.is_dir()
 parent_dir.rmdir()
 
+#
 # Let's mess with files...
 path.exists()
 path.touch()
@@ -117,11 +127,14 @@ path.rename(new_path)
 new_path.replace(path)
 new_path.unlink(missing_ok=True)
 
+#
 # Now let's cleanup...
 for p in [*sorted(parent_dir.rglob("*"), reverse=True), parent_dir]:
     if p.is_file():
+        print(f"Deleting file {p}")
         p.unlink()  # Delete file
     elif p.is_dir():
+        print(f"Deleting dir {p}")
         p.rmdir()  # Delete empty dir
 list(parent_dir.rglob("*"))
 parent_dir.exists()
