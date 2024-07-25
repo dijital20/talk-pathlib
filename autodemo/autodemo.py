@@ -13,7 +13,10 @@ from pprint import pformat
 from typing import Any, TextIO
 
 
+# region Enumerations, Constants and Utility classes
 class Ansi(StrEnum):
+    """Ansi escape sequences for controlling terminal output."""
+
     # Text colors
     black = "\u001b[30m"
     red = "\u001b[31m"
@@ -100,6 +103,10 @@ class LocalScope(UserDict):
         self.updated_keys.clear()
 
 
+# endregion
+
+
+# region Private functions
 def _get_width() -> int:
     """Get the terminal width."""
     return shutil.get_terminal_size()[0]
@@ -206,6 +213,10 @@ def _print_local_scope(local_scope: LocalScope[str, Any]):
         local_scope.reset_updated_keys()
 
 
+# endregion
+
+
+# region Public functions
 def process_file(path: Path):
     """Process a script file, line by line.
 
@@ -246,6 +257,9 @@ def process_file(path: Path):
             _print_local_scope(local_scope)
 
 
+# endregion
+
+# region Main block
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Execute steps in a file.")
     parser.add_argument(
@@ -269,3 +283,4 @@ if __name__ == "__main__":
         os.chdir(args.work_dir)
 
     process_file(args.file_path)
+# endregion
