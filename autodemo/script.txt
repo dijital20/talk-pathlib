@@ -1,3 +1,8 @@
+# hot: pathlib, not: string paths
+    # Josh Schneider
+    # dijital20@github.com @diji@mastodon.social
+
+#
 # Let's start with string paths...
 path = "~/foo/bar/baz.txt"
 path
