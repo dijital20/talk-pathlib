@@ -10,8 +10,6 @@
     # PyTexas Virtual Meetup Organizer and Host
     # https://pytexas.org/meetup
 
-# First, here's a function.
-
 def announce(
         text: str,
         *more_text: str, 
@@ -33,18 +31,11 @@ def announce(
     
     return output
 
-# 
+print(announce('Hi there', 'How are you?'))
 
-# Usage looks like this...
+print(announce('Hi there', title='Josh'))
 
-t = announce('Hi there', 'How are you?')
-print(t)
-
-t = announce('Hi there', title='Josh')
-print(t)
-
-t = announce('Hi there', 'How are you?', headers=True, header_char='*')
-print(t)
+print(announce('Hi there', 'How are you?', headers=True, header_char='*'))
 
 # ---
 
@@ -52,8 +43,8 @@ import inspect
 
 # Get the signature of a function
 sig = inspect.signature(announce)
-sig.parameters
-sig.parameters['header_char']
+sig.parameters  # List parameters
+sig.parameters['header_char']  # Get a single parameter
 sig.parameters['header_char'].name
 sig.parameters['header_char'].annotation
 sig.parameters['header_char'].default
