@@ -1,5 +1,14 @@
-# Inspect is fun!
-    # A PyOhio Lightning talk.
+# 
+    # Inspect is fun!
+    #
+    # Josh Schneider
+    # dijital20@github.com @diji@mastodon.social
+    #
+    # PyTexas Conference Organizer
+    # https://pytexas.org/2025
+    #
+    # PyTexas Virtual Meetup Organizer and Host
+    # https://pytexas.org/meetup
 
 # First, here's a function.
 
