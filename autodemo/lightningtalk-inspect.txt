@@ -1,0 +1,78 @@
+# Inspect is fun!
+    # A PyOhio Lightning talk.
+
+# First, here's a function.
+
+def announce(
+        text: str,
+        *more_text: str, 
+        title: str | None = None, 
+        header_char: str = '=',
+        headers: bool = False,
+        width: int = 80,
+    ) -> str:
+    output = ''
+    if title:
+        output += f'{header_char} {title} {header_char * (width - len(title) - 3)}\n'
+    elif headers:
+        output += header_char * width + '\n'
+
+    output += '\n'.join((text, *more_text)) + '\n'
+
+    if title or headers:
+        output += header_char * width + '\n'
+    
+    return output
+
+# 
+
+# Usage looks like this...
+
+t = announce('Hi there', 'How are you?')
+print(t)
+
+t = announce('Hi there', title='Josh')
+print(t)
+
+t = announce('Hi there', 'How are you?', headers=True, header_char='*')
+print(t)
+
+# ---
+
+import inspect
+
+# Get the signature of a function
+sig = inspect.signature(announce)
+sig.parameters
+sig.parameters['header_char']
+sig.parameters['header_char'].name
+sig.parameters['header_char'].annotation
+sig.parameters['header_char'].default
+
+# 
+
+# Get the call arguments of a function
+inspect.getcallargs(announce, 'Hi there', 'How are you?')
+inspect.getcallargs(announce, 'Hi there', title='Josh')
+inspect.getcallargs(announce, 'Hi there', 'How are you?', headers=True, header_char='*')
+
+# 
+
+# Test what something is
+inspect.isfunction(announce)
+inspect.isclass(announce)
+
+# 
+
+# Take a look at the stack and frames
+
+inspect.stack()
+
+# 
+
+f = inspect.currentframe()
+f
+f.f_locals
+f.f_globals
+
+# There's more, so get exploring!

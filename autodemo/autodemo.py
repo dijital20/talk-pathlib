@@ -232,13 +232,17 @@ def process_file(path: Path):
             f"{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
         )
         for code in _find_executable_lines(f):
-            if code == "# ---":
-                print(
-                    f"{Ansi.white}{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
-                )
-                continue
-
-            _print_expression(code)
+            match code:
+                case "# ---":
+                    print(
+                        f"{Ansi.white}{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
+                    )
+                    continue
+                case "#":
+                    print("")
+                    continue
+                case _:
+                    _print_expression(code)
 
             if (result := _execute_line(code, local_scope)) is not None:
                 print(f"{Ansi.blue}{pformat(result, width=_get_width())}{Ansi.reset}")
