@@ -135,6 +135,7 @@ def _find_executable_lines(f: TextIO) -> Iterator[str]:
     """
     buffer = f.read(1)
     while True:
+        # Handle EOF
         if not (char := f.read(1)):
             yield buffer.strip()
             break
@@ -231,8 +232,10 @@ def process_file(path: Path):
             f"{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
         )
         for code in _find_executable_lines(f):
-            if code == "#":
-                print("")
+            if code == "# ---":
+                print(
+                    f"{Ansi.white}{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
+                )
                 continue
 
             _print_expression(code)

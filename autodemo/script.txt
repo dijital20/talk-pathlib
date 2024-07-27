@@ -1,3 +1,16 @@
+# 
+    # hot: pathlib, not: string paths
+    # Josh Schneider
+    # dijital20@github.com @diji@mastodon.social
+    #
+    # PyTexas Conference Organizer
+    # https://pytexas.org/2025
+    #
+    # PyTexas Virtual Meetup Organizer and Host
+    # https://pytexas.org/meetup
+
+# ---
+
 # Let's start with string paths...
 path = "~/foo/bar/baz.txt"
 path
@@ -7,6 +20,7 @@ path
 import os.path  # We need this guy to even work with them
 
 os.path.abspath(path)
+
 # What?
 
 path = os.path.expanduser(path)
@@ -14,10 +28,12 @@ os.path.split(path)
 os.path.exists(path)
 os.path.isdir(path)
 os.path.isfile(path)
+
 # Look how we have to pass things all over the place?
 # What is this, the dark ages?
 
-#
+# ---
+
 # Enter pathlib!!
 from pathlib import Path
 
@@ -32,35 +48,42 @@ Path(path)
 hash(path)
 
 # Other ways to make a path
+
 current_dir = Path.cwd()
 home_dir = Path.home()
 Path(__file__)
 
-#
+# ---
+
 # Let's mess with PurePath operations...
 # Paths have parts and parents
+
 path
 path.parts
 path.parent
 list(path.parents)
 
 # The last segment of a path has parts of its own
+
 path.name
 path.stem
 path.suffix
 
 # With methods to change them
+
 path.with_name("spam.txt")
 path.with_stem("eggs")
 path.with_suffix(".zip")
 
 # Let's mutate the path some
+
 path = path.expanduser()
 path.absolute()
 path.resolve()
 path = path.resolve()
 
 # And now, the parade of bool methods...
+
 path.exists()
 home_dir.exists()
 home_dir.is_dir()
@@ -74,6 +97,7 @@ home_dir.is_block_device()
 home_dir.is_char_device()
 
 # More path operations...
+
 parent_dir = path.parent
 data_dir = parent_dir.joinpath("data")
 data_dir = parent_dir / "data"
@@ -81,8 +105,10 @@ path.is_relative_to(home_dir)
 home_dir in path.absolute().parents
 path.relative_to(home_dir)
 
-#
+# ---
+
 # Let's mess with directories...
+
 data_dir.is_dir()
 data_dir.mkdir()
 data_dir.mkdir(parents=True, exist_ok=True)
@@ -95,8 +121,10 @@ data_dir.rmdir()
 data_dir.is_dir()
 parent_dir.rmdir()
 
-#
+# ---
+
 # Let's mess with files...
+
 path.exists()
 path.touch()
 parent_dir.mkdir(exist_ok=True, parents=True)
@@ -106,18 +134,21 @@ path.is_file()
 list(parent_dir.rglob("*"))
 
 # What about writing to the file?
+
 with path.open(mode="w", encoding="UTF-8") as f:
     f.write("This is file content")
 path.write_text("this is file content", encoding="UTF-8")
 path.write_bytes(b"This is file content")
 
 # And reading?
+
 with path.open(mode="r", encoding="UTF-8") as f:
     print(f.read())
 path.read_text(encoding="UTF-8")
 path.read_bytes()
 
 # What about properties, like size?
+
 s = path.stat()
 s.st_size
 s.st_mode
@@ -127,15 +158,25 @@ path.rename(new_path)
 new_path.replace(path)
 new_path.unlink(missing_ok=True)
 
-#
+# ---
+
 # Now let's cleanup...
-for p in [*sorted(parent_dir.rglob("*"), reverse=True), parent_dir]:
-    if p.is_file():
-        print(f"Deleting file {p}")
-        p.unlink()  # Delete file
-    elif p.is_dir():
-        print(f"Deleting dir {p}")
-        p.rmdir()  # Delete empty dir
+
+def cleanup(root: Path):
+    """Cleanup a path."""
+    for p in [*sorted(root.rglob("*"), reverse=True), root]:
+        
+        # Handle files
+        if p.is_file():
+            print(f"Deleting file {p}")
+            p.unlink()  # Delete file
+        
+        # Handle folders
+        elif p.is_dir():
+            print(f"Deleting dir {p}")
+            p.rmdir()  # Delete empty dir
+
+cleanup(parent_dir)
 list(parent_dir.rglob("*"))
 parent_dir.exists()
 
