@@ -247,9 +247,7 @@ def process_file(path: Path):
                     _print_expression(code)
 
             if (result := _execute_line(code, local_scope)) is not None:
-                print(
-                    f"{Ansi.blue}{pformat(result, width=_get_width(), compact=True)}{Ansi.reset}"
-                )
+                print(f"{Ansi.blue}{pformat(result, width=_get_width())}{Ansi.reset}")
 
             _print_local_scope(local_scope)
 
