@@ -1,5 +1,6 @@
 # 
     # hot: pathlib, not: string paths
+    #
     # Josh Schneider
     # dijital20@github.com @diji@mastodon.social
     #
@@ -12,7 +13,7 @@
 # ---
 
 # Let's start with string paths...
-path = "~/foo/bar/baz.txt"
+path = '~/foo/bar/baz.txt'
 path
 
 # Look at how boring that is!
@@ -21,26 +22,47 @@ import os.path  # We need this guy to even work with them
 
 os.path.abspath(path)
 
-# What?
-
 path = os.path.expanduser(path)
 os.path.split(path)
+os.path.dirname(path), os.path.basename(path)
+os.path.splitext(path)
+
 os.path.exists(path)
 os.path.isdir(path)
 os.path.isfile(path)
 
-# Look how we have to pass things all over the place?
-# What is this, the dark ages?
+import glob
+glob.glob(os.path.expanduser('~/*'))
 
-# ---
+# There's got to be a better way!
 
-# Enter pathlib!!
+# --- clear ---
+
+import pathlib
+
+path = pathlib.Path('~/foo/bar/baz.txt')
+
+type(path)  # Wait, what type?
+type(path).__mro__  # What are its ancestors?
+
+pure_path_members = {
+    f'{n}()' if callable(v) else n 
+    for n, v in vars(pathlib.PurePath).items() 
+    if not n.startswith('_')}
+
+path_members = {
+    f'{n}()' if callable(v) else n
+    for n, v in vars(pathlib.Path).items() 
+    if not n.startswith('_')}
+
+sorted(pure_path_members)
+sorted(path_members - pure_path_members)
+
+# --- clear ---
+
 from pathlib import Path
 
-path = Path("~/foo/bar/baz.txt")
-
-path
-type(path).__mro__  # What are its ancestors?
+path = Path('~/foo/bar/baz.txt').expanduser()
 
 str(path)
 Path(path)
@@ -68,6 +90,11 @@ list(path.parents)
 path.name
 path.stem
 path.suffix
+path.suffixes
+
+# More attributes
+path.root
+path.drive
 
 # With methods to change them
 
@@ -76,33 +103,22 @@ path.with_stem("eggs")
 path.with_suffix(".zip")
 
 # Let's mutate the path some
-
-path = path.expanduser()
-path.absolute()
-path.resolve()
-path = path.resolve()
-
-# And now, the parade of bool methods...
-
-path.exists()
-home_dir.exists()
-home_dir.is_dir()
-home_dir.is_file()
-home_dir.is_junction()
-home_dir.is_symlink()
-home_dir.is_mount()
-home_dir.is_socket()
-home_dir.is_fifo()
-home_dir.is_block_device()
-home_dir.is_char_device()
+rel_path = path.relative_to(home_dir)
+rel_path.absolute()
+rel_path.resolve()
 
 # More path operations...
 
 parent_dir = path.parent
 data_dir = parent_dir.joinpath("data")
 data_dir = parent_dir / "data"
+
 path.is_relative_to(home_dir)
 home_dir in path.absolute().parents
+Path('~/foo/bar/baz.txt').is_relative_to(home_dir)
+
+Path('~') == home_dir
+
 path.relative_to(home_dir)
 
 # ---
@@ -157,6 +173,22 @@ new_path.parent.mkdir(parents=True, exist_ok=True)
 path.rename(new_path)
 new_path.replace(path)
 new_path.unlink(missing_ok=True)
+
+# ---
+
+# And now, the parade of bool methods...
+
+path.exists()
+home_dir.exists()
+home_dir.is_dir()
+home_dir.is_file()
+home_dir.is_junction()
+home_dir.is_symlink()
+home_dir.is_mount()
+home_dir.is_socket()
+home_dir.is_fifo()
+home_dir.is_block_device()
+home_dir.is_char_device()
 
 # ---
 
