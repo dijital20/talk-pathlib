@@ -98,10 +98,6 @@ class LocalScope(UserDict):
         self.updated_keys.add(key)
         return super().__setitem__(key, item)
 
-    def reset_updated_keys(self):
-        """Reset the set of updated keys."""
-        self.updated_keys.clear()
-
 
 # endregion
 
@@ -204,14 +200,14 @@ def _print_local_scope(local_scope: LocalScope[str, Any]):
             f"{Ansi.white}{Ansi.dim}{Ansi.underline}{' ' * _get_width()}{Ansi.reset}\n"
             f"{Ansi.bright_blue}Locals{Ansi.reset}"
         )
+        width = _get_width()
         for name, value in local_scope.items():
-            value_width = _get_width() - len(name) - 3
-            value_repr = repr(value)
-            value = textwrap.shorten(value_repr, value_width, placeholder="...")
+            value_width = width - len(name) - 3
+            value = textwrap.shorten(repr(value), value_width, placeholder="...")
             new_mark = f"{Ansi.bold}*" if name in local_scope.updated_keys else " "
             print(f"{new_mark}{Ansi.red}{name}{Ansi.reset} = {value}")
 
-        local_scope.reset_updated_keys()
+        local_scope.updated_keys.clear()
 
 
 # endregion
@@ -233,6 +229,12 @@ def process_file(path: Path):
         )
         for code in _find_executable_lines(f):
             match code:
+                case "# --- clear ---":
+                    local_scope.clear()
+                    print(
+                        f"{Ansi.white}{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
+                    )
+                    continue
                 case "# ---":
                     print(
                         f"{Ansi.white}{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
@@ -245,7 +247,9 @@ def process_file(path: Path):
                     _print_expression(code)
 
             if (result := _execute_line(code, local_scope)) is not None:
-                print(f"{Ansi.blue}{pformat(result, width=_get_width())}{Ansi.reset}")
+                print(
+                    f"{Ansi.blue}{pformat(result, width=_get_width(), compact=True)}{Ansi.reset}"
+                )
 
             _print_local_scope(local_scope)
 
