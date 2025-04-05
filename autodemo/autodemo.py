@@ -1,5 +1,9 @@
 """Automating demo."""
 
+# /// script
+# requires-python = ">=3.10"
+# ///
+
 import argparse
 import os
 import platform
@@ -155,7 +159,7 @@ def _print_expression(expression: str):
             else f"{Ansi.bright_magenta}...{Ansi.reset}"
         )
         if "#" in line:
-            line = line.replace("#", f"{Ansi.bright_white}{Ansi.italic}#") + Ansi.reset
+            line = line.replace("#", f"{Ansi.dim}{Ansi.italic}#") + Ansi.reset
         print(f"{prompt} {line}")
 
 
