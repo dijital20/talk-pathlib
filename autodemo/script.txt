@@ -3,12 +3,6 @@
     #
     # Josh Schneider
     # dijital20@github.com @diji@mastodon.social
-    #
-    # PyTexas Conference Organizer
-    # https://pytexas.org/2025
-    #
-    # PyTexas Virtual Meetup Organizer and Host
-    # https://pytexas.org/meetup
 
 # ---
 
