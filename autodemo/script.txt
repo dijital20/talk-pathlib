@@ -39,12 +39,12 @@ path = pathlib.Path('~/foo/bar/baz.txt')
 type(path)  # Wait, what type?
 type(path).__mro__  # What are its ancestors?
 
-pure_path_members = {
+pure_path_members = {  # List the PurePath members
     f'{n}()' if callable(v) else n 
     for n, v in vars(pathlib.PurePath).items() 
     if not n.startswith('_')}
 
-path_members = {
+path_members = {  # List the Path members
     f'{n}()' if callable(v) else n
     for n, v in vars(pathlib.Path).items() 
     if not n.startswith('_')}
@@ -99,7 +99,7 @@ path.with_suffix(".zip")
 # Let's mutate the path some
 rel_path = path.relative_to(home_dir)
 rel_path.absolute()
-rel_path.resolve()
+rel_path.resolve()  # Note: This is a Path operation, not PurePath
 
 # More path operations...
 
