@@ -7,7 +7,7 @@
 # ---
 
 # Let's start with string paths...
-path = '~/foo/bar/baz.txt'
+path = '~/demo/files/groceries.txt'
 path
 
 # Look at how boring that is!
@@ -34,7 +34,7 @@ glob.glob(os.path.expanduser('~/*'))
 
 import pathlib
 
-path = pathlib.Path('~/foo/bar/baz.txt')
+path = pathlib.Path('~/demo/files/groceries.txt')
 
 type(path)  # Wait, what type?
 type(path).__mro__  # What are its ancestors?
@@ -56,7 +56,7 @@ sorted(path_members - pure_path_members)
 
 from pathlib import Path
 
-path = Path('~/foo/bar/baz.txt').expanduser()
+path = Path('~/demo/files/groceries.txt').expanduser()
 
 str(path)
 Path(path)
@@ -109,7 +109,7 @@ data_dir = parent_dir / "data"
 
 path.is_relative_to(home_dir)
 home_dir in path.absolute().parents
-Path('~/foo/bar/baz.txt').is_relative_to(home_dir)
+Path('~/demo/files/groceries.txt').is_relative_to(home_dir)
 
 Path('~') == home_dir
 
@@ -162,7 +162,7 @@ path.read_bytes()
 s = path.stat()
 s.st_size
 s.st_mode
-new_path = Path("~/foo2/bar/baz.txt")
+new_path = Path("~/demo2/files/groceries.txt").expanduser()
 new_path.parent.mkdir(parents=True, exist_ok=True)
 path.rename(new_path)
 new_path.replace(path)
