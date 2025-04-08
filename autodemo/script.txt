@@ -188,21 +188,23 @@ home_dir.is_char_device()
 
 # Now let's cleanup...
 
-def cleanup(root: Path):
+def cleanup(*roots: Path):
     """Cleanup a path."""
-    for p in [*sorted(root.rglob("*"), reverse=True), root]:
-        
-        # Handle files
-        if p.is_file():
-            print(f"Deleting file {p}")
-            p.unlink()  # Delete file
-        
-        # Handle folders
-        elif p.is_dir():
-            print(f"Deleting dir {p}")
-            p.rmdir()  # Delete empty dir
+    for root in roots:
+        for p in [*sorted(root.rglob("*"), reverse=True), root]:
+            
+            # Handle files
+            if p.is_file():
+                print(f"Deleting file {p}")
+                p.unlink()  # Delete file
+            
+            # Handle folders
+            elif p.is_dir():
+                print(f"Deleting dir {p}")
+                p.rmdir()  # Delete empty dir
 
-cleanup(parent_dir)
+cleanup(home_dir / "demo", home_dir / "demo2")
+
 list(parent_dir.rglob("*"))
 parent_dir.exists()
 
