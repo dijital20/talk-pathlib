@@ -51,12 +51,28 @@ Easy peasy, right?
 I developed and tested this with Python 3.12, but it should work with anything
 3.10 an up. It should work in any terminal that supports ANSI escape sequences.
 
+## How to write content for it...
+
+If you want to reuse this, go for it! Right now, the script supports 2 input file
+types:
+
+* `.txt`: Expects that the whole file contains Python code.
+* `.md`: Expects the document has 1 or more python or py code fences.
+
+An executable line begins with no whitespace, and ends on the first newline with 
+no whitespace. This lends itself nicely to most Python code. For comment lines,
+if you want to do a multline comment, do something like:
+
+```text
+# This is the first line
+  # This is the second line
+  # This is the third line
+```
+
 ## Plans...
 
 I think I might split this into its own module. The two features I have in mind:
 
-* Support for markdown files. Like, parse the file looking for lines inside
-  code fences with type `py` or `python`.
 * Maybe using `textual` to do a better UI? It certainly would make some aspects
   easier.
 
