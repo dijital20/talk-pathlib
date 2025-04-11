@@ -28,7 +28,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Artifacts
-          path: pathlib-SoHotRightNow.*
+          path: |
+            pathlib-SoHotRightNow.*
+            autodemo/*.txt
           retention-days: 7
 
       - name: Tag branch (main only)
