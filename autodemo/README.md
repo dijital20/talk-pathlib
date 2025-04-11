@@ -26,7 +26,7 @@ Fork it, add to it, break it, have fun with it. It was a fun problem to solve.
 ## How do I use it?
 
 ```plaintext
-usage: autodemo.py [-h] [--work-dir WORK_DIR] file_path
+usage: autodemo.py [-h] [--work-dir WORK_DIR] [--timer TIMER] file_path
 
 Execute steps in a file.
 
@@ -35,8 +35,9 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  --work-dir WORK_DIR, -w WORK_DIR
+  --work-dir, -w WORK_DIR
                         Working directory.
+  --timer, -t TIMER     Advance on this interval rather than taking input.
 ```
 
 For example, if you have your commands in `commands.txt`, then it's as easy as:
