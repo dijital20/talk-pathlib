@@ -7,15 +7,17 @@
 import argparse
 import os
 import platform
+import re
 import shutil
 import textwrap
+import time
 from collections import UserDict
 from collections.abc import Iterator
 from enum import StrEnum
+from io import StringIO
 from pathlib import Path
 from pprint import pformat
-import time
-from typing import Any, TextIO
+from typing import Any
 
 
 # region Enumerations, Constants and Utility classes
@@ -125,26 +127,58 @@ def _canonical_path(val: str) -> Path:
     return Path(val).resolve()
 
 
-def _find_executable_lines(f: TextIO) -> Iterator[str]:
+def get_content(path: Path) -> StringIO:
+    """Get the content from the file into a StringIO object.
+
+    Args:
+        path: Path of the file.
+
+    Returns:
+        StringIO object to read from.
+
+    Notes:
+        For markdown, read all of the lines inside `python` or `py` code fences.
+        For all other files, read the file in whole.
+    """
+    match path.suffix:
+        case ".md":
+            # Extract code fences
+            return StringIO(
+                "\n# --- \n".join(
+                    re.findall(
+                        r"(?:```(?:python|py)(.*?)```)",
+                        path.read_text(encoding="UTF-8"),
+                        flags=re.DOTALL,
+                    )
+                )
+            )
+
+        case _:
+            # Just return the whole file
+            return StringIO(path.read_text(encoding="UTF-8"))
+
+
+def _find_executable_lines(path: Path) -> Iterator[str]:
     """Perform a buffered read through the file until we run out of content.
 
     Args:
-        f: File object.
+        path: File path.
 
     Yields:
         Each executable line.
     """
-    buffer = f.read(1)
-    while True:
-        # Handle EOF
-        if not (char := f.read(1)):
-            yield buffer.strip()
-            break
+    with get_content(path) as f:
+        buffer = f.read(1)
+        while True:
+            # Handle EOF
+            if not (char := f.read(1)):
+                yield buffer.strip()
+                break
 
-        buffer += char
-        if buffer[-2] == "\n" and buffer[-1] not in " \t\n\r":
-            yield buffer[:-1].strip()
-            buffer = buffer[-1]
+            buffer += char
+            if buffer[-2] == "\n" and buffer[-1] not in " \t\n\r":
+                yield buffer[:-1].strip()
+                buffer = buffer[-1]
 
 
 def _print_expression(expression: str):
@@ -226,53 +260,55 @@ def process_file(path: Path, timer: float | None = None):
         script_path: Path of a text file containing lines to execute.
         timer: Advance on this timer instead of input. Defaults to None.
     """
-    with path.open(mode="r", encoding="UTF-8") as f:
-        local_scope = LocalScope()
+
+    local_scope = LocalScope()
+    print(
+        f"{Ansi.white}{Ansi.italic}Python {platform.python_version()} "
+        f"on {platform.platform()}\n"
+        f"{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
+    )
+    for code in _find_executable_lines(path):
+        match code:
+            case "# --- clear ---":
+                local_scope.clear()
+                print(
+                    f"{Ansi.white}{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
+                )
+                continue
+            case "# ---":
+                print(
+                    f"{Ansi.white}{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
+                )
+                continue
+            case "#":
+                print("")
+                continue
+            case _:
+                _print_expression(code)
+
+        if (result := _execute_line(code, local_scope)) is not None:
+            print(f"{Ansi.blue}{pformat(result, width=_get_width())}{Ansi.reset}")
+
+        _print_local_scope(local_scope)
+
+        if timer is not None:
+            ph = 1
+            time.sleep(timer)
+        else:
+            ph = 2
+            if input(PROMPT).strip().lower() == "q":
+                break
+
         print(
-            f"{Ansi.white}{Ansi.italic}Python {platform.python_version()} "
-            f"on {platform.platform()}\n"
-            f"{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
+            (
+                Ansi.cursor_up
+                + Ansi.cursor_up * ((len(local_scope) + (ph)) if local_scope else 0)
+                + Ansi.clear_screen_cursor_to_end
+            ),
+            end="",
         )
-        for code in _find_executable_lines(f):
-            match code:
-                case "# --- clear ---":
-                    local_scope.clear()
-                    print(
-                        f"{Ansi.white}{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
-                    )
-                    continue
-                case "# ---":
-                    print(
-                        f"{Ansi.white}{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
-                    )
-                    continue
-                case "#":
-                    print("")
-                    continue
-                case _:
-                    _print_expression(code)
-
-            if (result := _execute_line(code, local_scope)) is not None:
-                print(f"{Ansi.blue}{pformat(result, width=_get_width())}{Ansi.reset}")
-
-            _print_local_scope(local_scope)
-
-            if timer is not None:
-                time.sleep(timer)
-            else:
-                if input(PROMPT).strip().lower() == "q":
-                    break
-
-            print(
-                (
-                    Ansi.cursor_up
-                    + Ansi.cursor_up * ((len(local_scope) + 2) if local_scope else 0)
-                    + Ansi.clear_screen_cursor_to_end
-                ),
-                end="",
-            )
-        else:  # No break
-            _print_local_scope(local_scope)
+    else:  # No break
+        _print_local_scope(local_scope)
 
 
 # endregion

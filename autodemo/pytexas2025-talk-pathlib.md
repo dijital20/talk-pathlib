@@ -1,10 +1,17 @@
+# PyTexas 2025 - Hot: `pathlib`, Not: String Paths
+
+```python
 # 
     # hot: pathlib, not: string paths
     #
     # Josh Schneider
     # dijital20@github.com @diji@mastodon.social
 
-# ---
+```
+
+## In the beginning, there were string paths...
+
+```python
 
 # Let's start with string paths...
 path = '~/demo/files/groceries.txt'
@@ -29,7 +36,13 @@ import glob
 glob.glob(os.path.expanduser('~/*'))
 
 # There's got to be a better way!
+```
 
+## Enter `pathlib`
+
+![pathlib inheritance](../img/pathlib-inheritance.png)
+
+```python
 # --- clear ---
 
 import pathlib
@@ -53,7 +66,11 @@ path_members = {  # List the Path members
     for n, v in vars(pathlib.Path).items() 
     if not n.startswith('_')}
 sorted(path_members - pure_path_members)
+```
 
+## Creating `Path` objects
+
+```python
 # --- clear ---
 
 from pathlib import Path
@@ -71,8 +88,11 @@ current_dir = Path.cwd()
 home_dir = Path.home()
 Path(__file__)
 
-# ---
+```
 
+## `PurePath` operations
+
+```python
 # Let's mess with PurePath operations...
 path
 
@@ -107,8 +127,11 @@ path.relative_to(home_dir)
 rel_path = path.relative_to(home_dir)
 rel_path.absolute()
 
-# ---
+```
 
+## Messing with directories
+
+```python
 # Let's mess with directories...
 
 data_dir = parent_dir / 'data'
@@ -123,9 +146,11 @@ list(parent_dir.rglob('*'))
 data_dir.rmdir()
 data_dir.is_dir()
 parent_dir.rmdir()
+```
 
-# ---
+## Messing with files
 
+```python
 # Let's mess with files...
 
 path.exists()
@@ -161,7 +186,11 @@ path.rename(new_path)
 new_path.replace(path)
 new_path.unlink(missing_ok=True)
 
-# ---
+```
+
+## Boolean methods
+
+```python
 
 # And now, the parade of bool methods...
 
@@ -176,7 +205,11 @@ home_dir.is_socket()
 home_dir.is_fifo()
 home_dir.is_block_device()
 home_dir.is_char_device()
+```
 
+## Path traversal attacks and `pathlib`
+
+```python
 # --- clear ---
 
 # Let's talk about Security, specifically Path Traversal attacks
@@ -201,9 +234,11 @@ log_path.absolute()
 log_path.resolve()
 log_path.resolve(strict=True)
 (Path.home() / user_input).resolve()
+```
 
-# ---
+## Cleanup
 
+```python
 # Now let's cleanup...
 
 def cleanup(*roots: Path | str):
@@ -237,3 +272,5 @@ cleanup(
     )
 
 # So, go play with pathlib!
+
+```
