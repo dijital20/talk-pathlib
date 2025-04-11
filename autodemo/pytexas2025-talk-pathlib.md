@@ -40,6 +40,8 @@ glob.glob(os.path.expanduser('~/*'))
 
 ## Enter `pathlib`
 
+![pathlib inheritance](../img/pathlib-inheritance.png)
+
 ```python
 # --- clear ---
 
