@@ -1,3 +1,6 @@
+# PyOhio 2024 - Hot: `pathlib`, Not: String Paths
+
+```python
 # 
     # hot: pathlib, not: string paths
     #
@@ -10,7 +13,11 @@
     # PyTexas Virtual Meetup Organizer and Host
     # https://pytexas.org/meetup
 
-# ---
+```
+
+## In the beginning, there were string paths...
+
+```python
 
 # Let's start with string paths...
 path = '~/foo/bar/baz.txt'
@@ -35,9 +42,11 @@ import glob
 glob.glob(os.path.expanduser('~/*'))
 
 # There's got to be a better way!
+```
 
-# --- clear ---
+## Enter `pathlib`
 
+```python
 import pathlib
 
 path = pathlib.Path('~/foo/bar/baz.txt')
@@ -57,9 +66,11 @@ path_members = {
 
 sorted(pure_path_members)
 sorted(path_members - pure_path_members)
+```
 
-# --- clear ---
+## Making `Path` objects
 
+```python
 from pathlib import Path
 
 path = Path('~/foo/bar/baz.txt').expanduser()
@@ -74,9 +85,11 @@ hash(path)
 current_dir = Path.cwd()
 home_dir = Path.home()
 Path(__file__)
+```
 
-# ---
+## `PurePath` and `Path`
 
+```python
 # Let's mess with PurePath operations...
 # Paths have parts and parents
 
@@ -120,9 +133,11 @@ Path('~/foo/bar/baz.txt').is_relative_to(home_dir)
 Path('~') == home_dir
 
 path.relative_to(home_dir)
+```
 
-# ---
+## Messing with directories
 
+```python
 # Let's mess with directories...
 
 data_dir.is_dir()
@@ -136,9 +151,11 @@ list(parent_dir.rglob("*"))
 data_dir.rmdir()
 data_dir.is_dir()
 parent_dir.rmdir()
+```
 
-# ---
+## Messing with files
 
+```python
 # Let's mess with files...
 
 path.exists()
@@ -173,9 +190,11 @@ new_path.parent.mkdir(parents=True, exist_ok=True)
 path.rename(new_path)
 new_path.replace(path)
 new_path.unlink(missing_ok=True)
+```
 
-# ---
+## Boolean methods
 
+```python
 # And now, the parade of bool methods...
 
 path.exists()
@@ -189,9 +208,11 @@ home_dir.is_socket()
 home_dir.is_fifo()
 home_dir.is_block_device()
 home_dir.is_char_device()
+```
 
-# ---
+## Cleanup
 
+```python
 # Now let's cleanup...
 
 def cleanup(root: Path):
@@ -213,3 +234,4 @@ list(parent_dir.rglob("*"))
 parent_dir.exists()
 
 # So, go play with pathlib!
+```

@@ -1,3 +1,6 @@
+# PyOhio 2024 Lightning Talk - Inspect is fun!
+
+```python
 # 
     # Inspect is fun!
     #
@@ -8,8 +11,12 @@
     # https://pytexas.org/2025
     #
     # PyTexas Virtual Meetup Organizer and Host
-    # https://pytexas.org/meetup
+    # https://pytexas.org/meetup```
+```
 
+## Sample function
+
+```python
 def announce(
         text: str,
         *more_text: str, 
@@ -36,9 +43,11 @@ print(announce('Hi there', 'How are you?'))
 print(announce('Hi there', title='Josh'))
 
 print(announce('Hi there', 'How are you?', headers=True, header_char='*'))
+```
 
-# ---
+## Inspect the signature of a function
 
+```python
 import inspect
 
 # Get the signature of a function
@@ -49,26 +58,31 @@ sig.parameters['header_char'].name
 sig.parameters['header_char'].annotation
 sig.parameters['header_char'].default
 
-# 
+```
 
+## Get the call args of a function
+
+```python
 # Get the call arguments of a function
 inspect.getcallargs(announce, 'Hi there', 'How are you?')
 inspect.getcallargs(announce, 'Hi there', title='Josh')
 inspect.getcallargs(announce, 'Hi there', 'How are you?', headers=True, header_char='*')
+```
 
-# 
+## Test what an object is with predicates
 
+```python
 # Test what something is
 inspect.isfunction(announce)
 inspect.isclass(announce)
+```
 
-# 
+## Look at the stack and frames
 
+```python
 # Take a look at the stack and frames
 
 inspect.stack()
-
-# 
 
 f = inspect.currentframe()
 f
@@ -76,3 +90,4 @@ f.f_locals
 f.f_globals
 
 # There's more, so get exploring!
+```
