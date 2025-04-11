@@ -1,5 +1,9 @@
 """Automating demo."""
 
+# /// script
+# requires-python = ">=3.10"
+# ///
+
 import argparse
 import os
 import platform
@@ -10,6 +14,7 @@ from collections.abc import Iterator
 from enum import StrEnum
 from pathlib import Path
 from pprint import pformat
+import time
 from typing import Any, TextIO
 
 
@@ -155,7 +160,7 @@ def _print_expression(expression: str):
             else f"{Ansi.bright_magenta}...{Ansi.reset}"
         )
         if "#" in line:
-            line = line.replace("#", f"{Ansi.bright_white}{Ansi.italic}#") + Ansi.reset
+            line = line.replace("#", f"{Ansi.dim}{Ansi.italic}#") + Ansi.reset
         print(f"{prompt} {line}")
 
 
@@ -214,11 +219,12 @@ def _print_local_scope(local_scope: LocalScope[str, Any]):
 
 
 # region Public functions
-def process_file(path: Path):
+def process_file(path: Path, timer: float | None = None):
     """Process a script file, line by line.
 
     Args:
         script_path: Path of a text file containing lines to execute.
+        timer: Advance on this timer instead of input. Defaults to None.
     """
     with path.open(mode="r", encoding="UTF-8") as f:
         local_scope = LocalScope()
@@ -251,8 +257,11 @@ def process_file(path: Path):
 
             _print_local_scope(local_scope)
 
-            if input(PROMPT).strip().lower() == "q":
-                break
+            if timer is not None:
+                time.sleep(timer)
+            else:
+                if input(PROMPT).strip().lower() == "q":
+                    break
 
             print(
                 (
@@ -282,6 +291,12 @@ if __name__ == "__main__":
         type=_canonical_path,
         help="Working directory.",
     )
+    parser.add_argument(
+        "--timer",
+        "-t",
+        type=float,
+        help="Advance on this interval rather than taking input.",
+    )
     args = parser.parse_args()
 
     if args.work_dir:
@@ -291,5 +306,5 @@ if __name__ == "__main__":
         )
         os.chdir(args.work_dir)
 
-    process_file(args.file_path)
+    process_file(args.file_path, args.timer)
 # endregion
