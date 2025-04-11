@@ -292,15 +292,17 @@ def process_file(path: Path, timer: float | None = None):
         _print_local_scope(local_scope)
 
         if timer is not None:
+            ph = 1
             time.sleep(timer)
         else:
+            ph = 2
             if input(PROMPT).strip().lower() == "q":
                 break
 
         print(
             (
                 Ansi.cursor_up
-                + Ansi.cursor_up * ((len(local_scope) + 2) if local_scope else 0)
+                + Ansi.cursor_up * ((len(local_scope) + (ph)) if local_scope else 0)
                 + Ansi.clear_screen_cursor_to_end
             ),
             end="",
