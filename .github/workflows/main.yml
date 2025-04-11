@@ -30,7 +30,7 @@ jobs:
           name: Artifacts
           path: |
             pathlib-SoHotRightNow.*
-            autodemo/*.txt
+            autodemo/
           retention-days: 7
 
       - name: Tag branch (main only)
