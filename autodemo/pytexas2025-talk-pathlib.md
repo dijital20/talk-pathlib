@@ -6,7 +6,6 @@
     #
     # Josh Schneider
     # dijital20@github.com @diji@mastodon.social
-
 ```
 
 ## In the beginning, there were string paths...
@@ -191,7 +190,6 @@ new_path.unlink(missing_ok=True)
 ## Boolean methods
 
 ```python
-
 # And now, the parade of bool methods...
 
 path.exists()
