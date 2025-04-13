@@ -5,6 +5,7 @@
 # ///
 
 import argparse
+import logging
 import os
 import platform
 import re
@@ -18,6 +19,8 @@ from io import StringIO
 from pathlib import Path
 from pprint import pformat
 from typing import Any
+
+LOG = logging.getLogger(__name__)
 
 
 # region Enumerations, Constants and Utility classes
@@ -105,6 +108,10 @@ class LocalScope(UserDict):
         self.updated_keys.add(key)
         return super().__setitem__(key, item)
 
+    def clear(self):
+        LOG.debug("Clearing local scope")
+        return super().clear()
+
 
 # endregion
 
@@ -142,6 +149,7 @@ def get_content(path: Path) -> StringIO:
     """
     match path.suffix:
         case ".md":
+            LOG.debug("Loading markdown %s", path)
             # Extract code fences
             return StringIO(
                 "\n# --- \n".join(
@@ -154,6 +162,7 @@ def get_content(path: Path) -> StringIO:
             )
 
         case _:
+            LOG.debug("Loading text %s", path)
             # Just return the whole file
             return StringIO(path.read_text(encoding="UTF-8"))
 
@@ -227,26 +236,34 @@ def _execute_line(code: str, local_scope: dict[str, Any]) -> Any:
             print(f"{Ansi.red}{type(e).__name__}: {e}{Ansi.reset}")
 
 
-def _print_local_scope(local_scope: LocalScope[str, Any]):
+def _print_local_scope(local_scope: LocalScope[str, Any]) -> int:
     """Write the local scope to the console.
 
     Args:
         local_scope: Local scope dictionary.
         changed: Items that have changed since the last state.
+
+    Returns:
+        Number of lines written.
     """
+    LOG.debug("Printing local scope with %d items", len(local_scope))
+    lines = 0
     if local_scope:
         print(
             f"{Ansi.white}{Ansi.dim}{Ansi.underline}{' ' * _get_width()}{Ansi.reset}\n"
             f"{Ansi.bright_blue}Locals{Ansi.reset}"
         )
         width = _get_width()
+        lines += 2
         for name, value in local_scope.items():
             value_width = width - len(name) - 3
             value = textwrap.shorten(repr(value), value_width, placeholder="...")
             new_mark = f"{Ansi.bold}*" if name in local_scope.updated_keys else " "
             print(f"{new_mark}{Ansi.red}{name}{Ansi.reset} = {value}")
+            lines += 1
 
         local_scope.updated_keys.clear()
+    return lines
 
 
 # endregion
@@ -268,6 +285,8 @@ def process_file(path: Path, timer: float | None = None):
         f"{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
     )
     for code in _find_executable_lines(path):
+        LOG.debug("Line: %r", code)
+
         match code:
             case "# ^^^ clear ^^^":  # Clear locals without a line
                 local_scope.clear()
@@ -296,22 +315,20 @@ def process_file(path: Path, timer: float | None = None):
         if (result := _execute_line(code, local_scope)) is not None:
             print(f"{Ansi.blue}{pformat(result, width=_get_width())}{Ansi.reset}")
 
-        _print_local_scope(local_scope)
+        cursor_up = _print_local_scope(local_scope)
 
+        # Wait for advancement
         if timer is not None:
-            ph = 1
             time.sleep(timer)
         else:
-            ph = 2
+            cursor_up += 1
             if input(PROMPT).strip().lower() == "q":
                 break
 
+        # Clear local scope and update.
+        LOG.debug("Cursoring up %d lines and clearing", cursor_up)
         print(
-            (
-                Ansi.cursor_up
-                + Ansi.cursor_up * ((len(local_scope) + (ph)) if local_scope else 0)
-                + Ansi.clear_screen_cursor_to_end
-            ),
+            (Ansi.cursor_up * (cursor_up) + Ansi.clear_screen_cursor_to_end),
             end="",
         )
     else:  # No break
@@ -340,7 +357,16 @@ if __name__ == "__main__":
         type=float,
         help="Advance on this interval rather than taking input.",
     )
+    parser.add_argument(
+        "--log-path",
+        "-l",
+        type=_canonical_path,
+        help="Path to save the log to. If provided, logging will be done at DEBUG level.",
+    )
     args = parser.parse_args()
+
+    if args.log_path:
+        logging.basicConfig(level=logging.DEBUG, filename=args.log_path, filemode="w")
 
     if args.work_dir:
         args.work_dir = args.work_dir.resolve()
