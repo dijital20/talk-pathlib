@@ -6,7 +6,6 @@
     #
     # Josh Schneider
     # dijital20@github.com @diji@mastodon.social
-
 ```
 
 ## In the beginning, there were string paths...
@@ -43,7 +42,7 @@ glob.glob(os.path.expanduser('~/*'))
 ![pathlib inheritance](../img/pathlib-inheritance.png)
 
 ```python
-# --- clear ---
+# ^^^ clear ^^^
 
 import pathlib
 
@@ -71,7 +70,7 @@ sorted(path_members - pure_path_members)
 ## Creating `Path` objects
 
 ```python
-# --- clear ---
+# ^^^ clear ^^^
 
 from pathlib import Path
 
@@ -191,7 +190,6 @@ new_path.unlink(missing_ok=True)
 ## Boolean methods
 
 ```python
-
 # And now, the parade of bool methods...
 
 path.exists()
@@ -210,7 +208,7 @@ home_dir.is_char_device()
 ## Path traversal attacks and `pathlib`
 
 ```python
-# --- clear ---
+# ^^^ clear ^^^
 
 # Let's talk about Security, specifically Path Traversal attacks
   # A path traversal attack is when an attacker provides input that causes you to traverse
