@@ -153,7 +153,8 @@ def get_content(path: Path) -> StringIO:
             # Extract code fences
             return StringIO(
                 "\n# --- \n".join(
-                    re.findall(
+                    t.strip()
+                    for t in re.findall(
                         r"(?:```(?:python|py)(.*?)```)",
                         path.read_text(encoding="UTF-8"),
                         flags=re.DOTALL,
