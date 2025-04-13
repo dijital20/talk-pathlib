@@ -269,21 +269,28 @@ def process_file(path: Path, timer: float | None = None):
     )
     for code in _find_executable_lines(path):
         match code:
-            case "# --- clear ---":
+            case "# ^^^ clear ^^^":  # Clear locals without a line
+                local_scope.clear()
+                continue
+
+            case "# --- clear ---":  # Clear locals with a line
                 local_scope.clear()
                 print(
                     f"{Ansi.white}{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
                 )
                 continue
-            case "# ---":
+
+            case "# ---":  # Line, keep locals
                 print(
                     f"{Ansi.white}{Ansi.underline}{Ansi.dim}{' ' * _get_width()}{Ansi.reset}"
                 )
                 continue
-            case "#":
+
+            case "#":  # Empty comment
                 print("")
                 continue
-            case _:
+
+            case _:  # Code!!
                 _print_expression(code)
 
         if (result := _execute_line(code, local_scope)) is not None:
