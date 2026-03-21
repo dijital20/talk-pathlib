@@ -13,7 +13,7 @@ import shutil
 import textwrap
 import time
 from collections import UserDict
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from enum import StrEnum
 from io import StringIO
 from pathlib import Path
@@ -208,7 +208,7 @@ def _print_expression(expression: str):
         print(f"{prompt} {line}")
 
 
-def _execute_line(code: str, local_scope: dict[str, Any]) -> Any:
+def _execute_line(code: str, local_scope: Mapping[str, Any]) -> Any:
     """Execute code.
 
     Args:
@@ -220,19 +220,19 @@ def _execute_line(code: str, local_scope: dict[str, Any]) -> Any:
     """
     # Try to compile this as an eval expression
     try:
-        code = compile(code, "<string>", "eval")
+        code_ = compile(code, "<string>", "eval")
 
     # Whoops, wasn't an expression, just exec it.
     except SyntaxError:
         try:
-            exec(code, globals(), local_scope)
+            exec(code_, globals(), local_scope)
         except Exception as e:
             print(f"{Ansi.red}{type(e).__name__}: {e}{Ansi.reset}")
 
     # Ah HA!, we have an expression!
     else:
         try:
-            return eval(code, globals(), local_scope)
+            return eval(code_, globals(), local_scope)
         except Exception as e:
             print(f"{Ansi.red}{type(e).__name__}: {e}{Ansi.reset}")
 
