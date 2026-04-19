@@ -225,7 +225,7 @@ def _execute_line(code: str, local_scope: Mapping[str, Any]) -> Any:
     # Whoops, wasn't an expression, just exec it.
     except SyntaxError:
         try:
-            exec(code_, globals(), local_scope)
+            exec(code, globals(), local_scope)
         except Exception as e:
             print(f"{Ansi.red}{type(e).__name__}: {e}{Ansi.reset}")
 
